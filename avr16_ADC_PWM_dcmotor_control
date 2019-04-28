@@ -1,0 +1,38 @@
+/*
+ */
+
+#include <avr/io.h>
+
+#include <util/delay.h>
+
+void pwm_init()  //fast pwm initialization with no clock pre-scalling//
+{
+    TCCR0 =(1<<WGM00)| (1<<WGM01)| (1<<COM01) | (1<<CS02);    //PWM init with 8bit timer,fast PWM
+    //DDRB |= (1<<PB3);
+}
+
+
+
+int main(void)
+{
+
+    // Insert code
+    uint16_t adc_read=0;
+    uint8_t pwm_data=0;
+    DDRA=0x00;
+    DDRB=0xFF;
+    ADMUX|=(1<<REFS0) | (1<<MUX1);  //Ref source selection -- AVCC, ADC channel 2 selection
+    ADCSRA|= (1<<ADEN) | (1<<ADSC)|(1<<ADATE) | (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0); // ADC enable,auto trigger,prescaler selec
+   pwm_init();
+    while(1)
+    {
+      ADCSRA|=(1<<ADSC);
+      //while(ADCSRA&(1<<ADSC));
+
+   adc_read = (ADCH*256) + ADCL;
+   pwm_data = adc_read/4;
+//PORTB = adc_read;
+  OCR0 = pwm_data;  //PWM output pin
+    }
+    return 0;
+}
