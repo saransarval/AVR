@@ -1,0 +1,63 @@
+/*
+ */
+
+#include <avr/io.h>
+
+uint16_t delay_count=0;
+unsigned char  delay_task_done=1;
+void Delay_in_ms(unsigned int delay_in_ms)
+{
+     delay_task_done=1;
+    TCCR0|=(1<<CS00)|(1<<CS02);
+  //  TCNT0=0;
+
+
+ do{
+    if(TCNT0>16) //1ms delay  for 16ms delay use TCNT0 value as 253
+        {
+
+              TCNT0=0;
+              delay_count++;
+              if(delay_count>delay_in_ms)
+                {
+                 delay_task_done=0;
+                 delay_count=0;
+                 PORTB^=(1<<PB2);
+                 TCCR0=0x00;
+                 TCNT0=0;
+                }
+        }
+    }while(delay_task_done);
+
+  }
+int main(void)
+{
+
+    // Insert code
+DDRB|=(1<<PB1)|(1<<PB2); //output mode
+DDRC&=~(1<<PC0); //input mode
+TCCR0|=(1<<CS00)|(1<<CS02);
+TCNT0=0;
+
+    while(1)
+    {
+
+
+        if(PINC&(1<<PC0)==1)
+         {
+
+           PORTB|=(1<<PB1);
+           Delay_in_ms(500);
+           PORTB&=~(1<<PB1);
+           Delay_in_ms(500);
+         }
+       else
+         {
+
+           PORTB&=~(1<<PB1);
+         }
+
+    }
+
+    return 0;
+}
